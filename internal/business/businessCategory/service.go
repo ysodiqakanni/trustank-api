@@ -5,11 +5,12 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/qiangxue/go-rest-api/internal/entity"
 	"github.com/qiangxue/go-rest-api/pkg/log"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Service encapsulates use case logic for businessCategories.
 type Service interface {
-	Get(ctx context.Context, id string) (BusinessCategory, error)
+	Get(ctx context.Context, id primitive.ObjectID) (BusinessCategory, error)
 	GetByName(ctx context.Context, name string) (BusinessCategory, error)
 	//Query(ctx context.Context, offset, limit int) ([]Album, error)
 	//Count(ctx context.Context) (int, error)
@@ -46,7 +47,7 @@ func NewService(repo Repository, logger log.Logger) Service {
 }
 
 // Get returns the album with the specified the album ID.
-func (s service) Get(ctx context.Context, id string) (BusinessCategory, error) {
+func (s service) Get(ctx context.Context, id primitive.ObjectID) (BusinessCategory, error) {
 	category, err := s.repo.Get(ctx, id)
 	if err != nil {
 		return BusinessCategory{}, err

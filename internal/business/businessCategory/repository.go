@@ -7,13 +7,14 @@ import (
 	"github.com/qiangxue/go-rest-api/pkg/dbcontext"
 	"github.com/qiangxue/go-rest-api/pkg/log"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // Repository encapsulates the logic to access categories from the data source.
 type Repository interface {
 	// Get returns the category with the specified album ID.
-	Get(ctx context.Context, id string) (entity.BusinessCategory, error)
+	Get(ctx context.Context, id primitive.ObjectID) (entity.BusinessCategory, error)
 	GetByName(ctx context.Context, id string) (entity.BusinessCategory, error)
 }
 
@@ -29,7 +30,7 @@ func NewRepository(db *dbcontext.DB, logger log.Logger) Repository {
 	return repository{col, logger}
 }
 
-func (r repository) Get(ctx context.Context, id string) (entity.BusinessCategory, error) {
+func (r repository) Get(ctx context.Context, id primitive.ObjectID) (entity.BusinessCategory, error) {
 	fmt.Println("Getting category by Id")
 	filter := bson.M{"_id": id}
 	var category entity.BusinessCategory

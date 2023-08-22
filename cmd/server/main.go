@@ -9,6 +9,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/go-ozzo/ozzo-routing/v2/content"
 	"github.com/go-ozzo/ozzo-routing/v2/cors"
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/qiangxue/go-rest-api/internal/album"
 	"github.com/qiangxue/go-rest-api/internal/auth"
@@ -69,7 +70,8 @@ func main() {
 	address := fmt.Sprintf(":%v", cfg.ServerPort)
 	hs := &http.Server{
 		Addr:    address,
-		Handler: buildHandler(logger, dbcontext.New(db), cfg),
+		Handler: buildHandlerWithMux(logger, dbcontext.New(db)),
+		// Handler: buildHandler(logger, dbcontext.New(db), cfg),
 	}
 
 	// start the HTTP server with graceful shutdown
@@ -99,6 +101,15 @@ func NewMongoDB(connStr, dbName string) (*mongo.Database, error) {
 	// mongoClient = client
 
 	return client.Database(dbName), nil
+}
+
+func buildHandlerWithMux(logger log.Logger, db *dbcontext.DB) http.Handler {
+	r := mux.NewRouter()
+	businessCategory.RegisterHandlersMux(r,
+		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
+		logger)
+
+	return r
 }
 
 // buildHandler sets up the HTTP routing and builds an HTTP handler.
