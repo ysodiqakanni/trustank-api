@@ -12,6 +12,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/qiangxue/go-rest-api/internal/album"
 	"github.com/qiangxue/go-rest-api/internal/auth"
+	"github.com/qiangxue/go-rest-api/internal/business/businessCategory"
 	"github.com/qiangxue/go-rest-api/internal/config"
 	"github.com/qiangxue/go-rest-api/internal/errors"
 	"github.com/qiangxue/go-rest-api/internal/healthcheck"
@@ -44,7 +45,7 @@ func main() {
 	}
 
 	// connect to the mongo database
-	mongoPassword := "password"
+	mongoPassword := "P@ssword"
 	escapedPassword := url.QueryEscape(mongoPassword)
 	connStr := fmt.Sprintf("mongodb+srv://root:%s@helloworldcluster.zndnutk.mongodb.net/?retryWrites=true&w=majority", escapedPassword)
 	db, err := NewMongoDB(connStr, "trustankDb")
@@ -119,6 +120,10 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 
 	album.RegisterHandlers(rg.Group(""),
 		album.NewService(album.NewRepository(db, logger), logger),
+		authHandler, logger,
+	)
+	businessCategory.RegisterHandlers(rg.Group(""),
+		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
 		authHandler, logger,
 	)
 
