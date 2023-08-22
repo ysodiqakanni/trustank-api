@@ -11,6 +11,7 @@ require (
 	github.com/lib/pq v1.2.0
 	github.com/qiangxue/go-env v1.0.0
 	github.com/stretchr/testify v1.4.0
+	go.mongodb.org/mongo-driver v1.12.1
 	go.uber.org/atomic v1.5.1 // indirect
 	go.uber.org/multierr v1.4.0 // indirect
 	go.uber.org/zap v1.13.0

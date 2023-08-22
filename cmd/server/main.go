@@ -18,7 +18,10 @@ import (
 	"github.com/qiangxue/go-rest-api/pkg/accesslog"
 	"github.com/qiangxue/go-rest-api/pkg/dbcontext"
 	"github.com/qiangxue/go-rest-api/pkg/log"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )
@@ -40,19 +43,26 @@ func main() {
 		os.Exit(-1)
 	}
 
-	// connect to the database
-	db, err := dbx.MustOpen("postgres", cfg.DSN)
+	// connect to the mongo database
+	mongoPassword := "password"
+	escapedPassword := url.QueryEscape(mongoPassword)
+	connStr := fmt.Sprintf("mongodb+srv://root:%s@helloworldcluster.zndnutk.mongodb.net/?retryWrites=true&w=majority", escapedPassword)
+	db, err := NewMongoDB(connStr, "trustankDb")
+
+	//db, err := dbx.MustOpen("postgres", cfg.DSN)
 	if err != nil {
 		logger.Error(err)
 		os.Exit(-1)
 	}
-	db.QueryLogFunc = logDBQuery(logger)
-	db.ExecLogFunc = logDBExec(logger)
-	defer func() {
-		if err := db.Close(); err != nil {
-			logger.Error(err)
-		}
-	}()
+	//db.QueryLogFunc = logDBQuery(logger)
+	//db.ExecLogFunc = logDBExec(logger)
+	//defer func() {
+	//	if err := db.Close(); err != nil {
+	//		logger.Error(err)
+	//	}
+	//}()
+
+	defer db.Client().Disconnect(context.Background())
 
 	// build HTTP server
 	address := fmt.Sprintf(":%v", cfg.ServerPort)
@@ -68,6 +78,26 @@ func main() {
 		logger.Error(err)
 		os.Exit(-1)
 	}
+}
+
+func NewMongoDB(connStr, dbName string) (*mongo.Database, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connStr))
+	if err != nil {
+		return nil, err
+	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Ping successful!")
+	// mongoClient = client
+
+	return client.Database(dbName), nil
 }
 
 // buildHandler sets up the HTTP routing and builds an HTTP handler.

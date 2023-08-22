@@ -118,18 +118,21 @@ func (s service) Delete(ctx context.Context, id string) (Album, error) {
 
 // Count returns the number of albums.
 func (s service) Count(ctx context.Context) (int, error) {
-	return s.repo.Count(ctx)
+	return 12, nil
+	//return s.repo.Count(ctx)
 }
 
 // Query returns the albums with the specified offset and limit.
 func (s service) Query(ctx context.Context, offset, limit int) ([]Album, error) {
-	items, err := s.repo.Query(ctx, offset, limit)
-	if err != nil {
-		return nil, err
-	}
-	result := []Album{}
-	for _, item := range items {
-		result = append(result, Album{item})
-	}
-	return result, nil
+	return []Album{}, nil
+
+	//items, err := s.repo.Query(ctx, offset, limit)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//result := []Album{}
+	//for _, item := range items {
+	//	result = append(result, Album{item})
+	//}
+	//return result, nil
 }
