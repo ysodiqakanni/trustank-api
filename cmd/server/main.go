@@ -36,11 +36,12 @@ func main() {
 		os.Exit(-1)
 	}
 
+	fmt.Println("conn, db and pass: ", cfg.DbConnectionString, cfg.DbName, cfg.DbPassword)
+
 	// connect to the mongo database
-	mongoPassword := "P@ssword"
-	escapedPassword := url.QueryEscape(mongoPassword)
-	connStr := fmt.Sprintf("mongodb+srv://root:%s@helloworldcluster.zndnutk.mongodb.net/?retryWrites=true&w=majority", escapedPassword)
-	db, err := NewMongoDB(connStr, "trustankDb")
+	escapedPassword := url.QueryEscape(cfg.DbPassword)
+	connStr := fmt.Sprintf(cfg.DbConnectionString, escapedPassword)
+	db, err := NewMongoDB(connStr, cfg.DbName)
 
 	//db, err := dbx.MustOpen("postgres", cfg.DSN)
 	if err != nil {
