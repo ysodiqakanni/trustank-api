@@ -2,22 +2,13 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"fmt"
-	"github.com/go-ozzo/ozzo-dbx"
 	"github.com/go-ozzo/ozzo-routing/v2"
-	"github.com/go-ozzo/ozzo-routing/v2/content"
-	"github.com/go-ozzo/ozzo-routing/v2/cors"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
-	"github.com/qiangxue/go-rest-api/internal/album"
-	"github.com/qiangxue/go-rest-api/internal/auth"
 	"github.com/qiangxue/go-rest-api/internal/business/businessCategory"
 	"github.com/qiangxue/go-rest-api/internal/config"
-	"github.com/qiangxue/go-rest-api/internal/errors"
-	"github.com/qiangxue/go-rest-api/internal/healthcheck"
-	"github.com/qiangxue/go-rest-api/pkg/accesslog"
 	"github.com/qiangxue/go-rest-api/pkg/dbcontext"
 	"github.com/qiangxue/go-rest-api/pkg/log"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -70,8 +61,7 @@ func main() {
 	address := fmt.Sprintf(":%v", cfg.ServerPort)
 	hs := &http.Server{
 		Addr:    address,
-		Handler: buildHandlerWithMux(logger, dbcontext.New(db)),
-		// Handler: buildHandler(logger, dbcontext.New(db), cfg),
+		Handler: buildHandler(logger, dbcontext.New(db)),
 	}
 
 	// start the HTTP server with graceful shutdown
@@ -103,15 +93,16 @@ func NewMongoDB(connStr, dbName string) (*mongo.Database, error) {
 	return client.Database(dbName), nil
 }
 
-func buildHandlerWithMux(logger log.Logger, db *dbcontext.DB) http.Handler {
+func buildHandler(logger log.Logger, db *dbcontext.DB) http.Handler {
 	r := mux.NewRouter()
-	businessCategory.RegisterHandlersMux(r,
+	businessCategory.RegisterHandlers(r,
 		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
 		logger)
 
 	return r
 }
 
+/*
 // buildHandler sets up the HTTP routing and builds an HTTP handler.
 func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.Handler {
 	router := routing.New()
@@ -145,7 +136,9 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 
 	return router
 }
+*/
 
+/*
 // logDBQuery returns a logging function that can be used to log SQL queries.
 func logDBQuery(logger log.Logger) dbx.QueryLogFunc {
 	return func(ctx context.Context, t time.Duration, sql string, rows *sql.Rows, err error) {
@@ -167,3 +160,4 @@ func logDBExec(logger log.Logger) dbx.ExecLogFunc {
 		}
 	}
 }
+*/
