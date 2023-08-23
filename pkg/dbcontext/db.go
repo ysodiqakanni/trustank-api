@@ -31,6 +31,12 @@ func (db *DB) DB() *mongo.Database {
 	return db.db
 }
 
+//func (db *DB) Transactional(ctx context.Context, f func(ctx context.Context) error) error {
+//	return db.db.TransactionalContext(ctx, nil, func(tx *dbx.Tx) error {
+//		return f(context.WithValue(ctx, txKey, tx))
+//	})
+//}
+
 // With returns a Builder that can be used to build and execute SQL queries.
 // With will return the transaction if it is found in the given context.
 // Otherwise it will return a DB connection associated with the context.

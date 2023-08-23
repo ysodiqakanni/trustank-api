@@ -7,8 +7,10 @@ import (
 	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/qiangxue/go-rest-api/internal/business/business"
 	"github.com/qiangxue/go-rest-api/internal/business/businessCategory"
 	"github.com/qiangxue/go-rest-api/internal/config"
+	"github.com/qiangxue/go-rest-api/internal/user"
 	"github.com/qiangxue/go-rest-api/pkg/dbcontext"
 	"github.com/qiangxue/go-rest-api/pkg/log"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -98,6 +100,9 @@ func buildHandler(logger log.Logger, db *dbcontext.DB) http.Handler {
 	r := mux.NewRouter()
 	businessCategory.RegisterHandlers(r,
 		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
+		logger)
+	business.RegisterHandlers(r,
+		business.NewService(business.NewRepository(db, logger), user.NewRepository(db, logger), logger),
 		logger)
 
 	return r
