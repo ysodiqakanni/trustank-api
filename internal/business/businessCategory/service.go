@@ -2,21 +2,19 @@ package businessCategory
 
 import (
 	"context"
+	"errors"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/qiangxue/go-rest-api/internal/entity"
 	"github.com/qiangxue/go-rest-api/pkg/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 // Service encapsulates use case logic for businessCategories.
 type Service interface {
 	Get(ctx context.Context, id primitive.ObjectID) (BusinessCategory, error)
 	GetByName(ctx context.Context, name string) (BusinessCategory, error)
-	//Query(ctx context.Context, offset, limit int) ([]Album, error)
-	//Count(ctx context.Context) (int, error)
-	//Create(ctx context.Context, input CreateAlbumRequest) (Album, error)
-	//Update(ctx context.Context, id string, input UpdateAlbumRequest) (Album, error)
-	//Delete(ctx context.Context, id string) (Album, error)
+	Create(ctx context.Context, req CreateBusinessCategoryRequest) (BusinessCategory, error)
 }
 
 // BusinessCategory represents the data about a BusinessCategory.
@@ -33,6 +31,8 @@ type CreateBusinessCategoryRequest struct {
 func (m CreateBusinessCategoryRequest) Validate() error {
 	return validation.ValidateStruct(&m,
 		validation.Field(&m.Name, validation.Required, validation.Length(0, 128)),
+
+		//validation.Field(&a.Zip, validation.Required, validation.Match(regexp.MustCompile("^[0-9]{5}$"))),
 	)
 }
 
@@ -61,4 +61,26 @@ func (s service) GetByName(ctx context.Context, name string) (BusinessCategory, 
 		return BusinessCategory{}, err
 	}
 	return BusinessCategory{category}, nil
+}
+func (s service) Create(ctx context.Context, req CreateBusinessCategoryRequest) (BusinessCategory, error) {
+	if err := req.Validate(); err != nil {
+		return BusinessCategory{}, err
+	}
+
+	existing, _ := s.GetByName(ctx, req.Name)
+	emptyObj := BusinessCategory{}
+	if existing != emptyObj {
+		return BusinessCategory{}, errors.New("A business category with this name already exists")
+	}
+
+	now := time.Now()
+	id, err := s.repo.Create(ctx, entity.BusinessCategory{
+		Name:      req.Name,
+		CreatedAt: now,
+		UpdatedAt: now,
+	})
+	if err != nil {
+		return BusinessCategory{}, err
+	}
+	return s.Get(ctx, *id)
 }
