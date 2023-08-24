@@ -3,7 +3,6 @@ package business
 import (
 	"context"
 	"errors"
-	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"github.com/go-ozzo/ozzo-validation/v4/is"
 	"github.com/qiangxue/go-rest-api/internal/entity"
@@ -76,23 +75,12 @@ func (s service) Register(ctx context.Context, req CreateBusinessRequest) (Busin
 	if err := req.Validate(); err != nil {
 		return Business{}, err
 	}
-	fmt.Println("After validation with email: ", req.WorkEmail, primitive.ObjectID{})
-
 	// check if a user with that name exists
 	existing, err := s.userRepo.GetByEmail(ctx, req.WorkEmail)
-	fmt.Println("get by email: ", existing, err)
 	emptyId := primitive.ObjectID{}
 	if err == nil || existing.ID != emptyId {
-		return Business{}, errors.New("A business with this email already exists")
+		return Business{}, errors.New("A business_ with this email already exists")
 	}
-
-	//emptyUserObject := entity.User{}
-	//if existing != emptyUserObject {
-	//	http.Error(w, "A user with this email already exists", http.StatusConflict)
-	//	return
-	//}
-	// now send the data to the repo
-	fmt.Println("After uniqueness check")
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), 12)
 	if err != nil {
@@ -112,19 +100,16 @@ func (s service) Register(ctx context.Context, req CreateBusinessRequest) (Busin
 
 	// Start the transaction
 	err = mongo.WithSession(context.Background(), session, func(sessionContext mongo.SessionContext) error {
-		// Start the transaction
 		err := session.StartTransaction(transactionOptions)
 		if err != nil {
 			return err
 		}
 
-		// Create a user
-		// let's create a user object from this
 		user := entity.User{
 			Email:          req.WorkEmail,
 			Name:           req.OwnerFullName,
 			HashedPassword: hashedPassword,
-			Role:           []string{"business"},
+			Role:           []string{"business_"},
 		}
 		// Insert the user document
 		_, err = s.userRepo.Create(sessionContext, user)
@@ -133,7 +118,7 @@ func (s service) Register(ctx context.Context, req CreateBusinessRequest) (Busin
 			return err
 		}
 
-		// Create a business object
+		// Create a business_ object
 		business := entity.Business{
 			Name:          req.BusinessName,
 			Email:         req.WorkEmail,

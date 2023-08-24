@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// BusinessCategory represents the category each business falls in
+// BusinessCategory represents the category each business_ falls in
 type BusinessCategory struct {
 	ID          primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
 	Name        string             `json:"name,omitempty" bson:"name,omitempty" validate:"required"`

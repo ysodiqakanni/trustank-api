@@ -70,7 +70,7 @@ func (s service) Create(ctx context.Context, req CreateBusinessCategoryRequest) 
 	existing, _ := s.GetByName(ctx, req.Name)
 	emptyObj := BusinessCategory{}
 	if existing != emptyObj {
-		return BusinessCategory{}, errors.New("A business category with this name already exists")
+		return BusinessCategory{}, errors.New("A business_ category with this name already exists")
 	}
 
 	now := time.Now()
