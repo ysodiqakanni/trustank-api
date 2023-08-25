@@ -7,6 +7,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
+	"github.com/qiangxue/go-rest-api/internal/auth"
 	"github.com/qiangxue/go-rest-api/internal/business"
 	"github.com/qiangxue/go-rest-api/internal/businessCategory"
 	"github.com/qiangxue/go-rest-api/internal/config"
@@ -37,26 +38,15 @@ func main() {
 		logger.Errorf("failed to load application configuration: %s", err)
 		os.Exit(-1)
 	}
-
-	fmt.Println("conn, db and pass: ", cfg.DbConnectionString, cfg.DbName, cfg.DbPassword)
-
 	// connect to the mongo database
 	escapedPassword := url.QueryEscape(cfg.DbPassword)
 	connStr := fmt.Sprintf(cfg.DbConnectionString, escapedPassword)
 	db, err := NewMongoDB(connStr, cfg.DbName)
 
-	//db, err := dbx.MustOpen("postgres", cfg.DSN)
 	if err != nil {
 		logger.Error(err)
 		os.Exit(-1)
 	}
-	//db.QueryLogFunc = logDBQuery(logger)
-	//db.ExecLogFunc = logDBExec(logger)
-	//defer func() {
-	//	if err := db.Close(); err != nil {
-	//		logger.Error(err)
-	//	}
-	//}()
 
 	defer db.Client().Disconnect(context.Background())
 
@@ -64,7 +54,7 @@ func main() {
 	address := fmt.Sprintf(":%v", cfg.ServerPort)
 	hs := &http.Server{
 		Addr:    address,
-		Handler: buildHandler(logger, dbcontext.New(db)),
+		Handler: buildHandler(logger, dbcontext.New(db), cfg),
 	}
 
 	// start the HTTP server with graceful shutdown
@@ -96,7 +86,7 @@ func NewMongoDB(connStr, dbName string) (*mongo.Database, error) {
 	return client.Database(dbName), nil
 }
 
-func buildHandler(logger log.Logger, db *dbcontext.DB) http.Handler {
+func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.Handler {
 	r := mux.NewRouter()
 	businessCategory.RegisterHandlers(r,
 		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
@@ -104,6 +94,12 @@ func buildHandler(logger log.Logger, db *dbcontext.DB) http.Handler {
 	business.RegisterHandlers(r,
 		business.NewService(business.NewRepository(db, logger), user.NewRepository(db, logger), logger),
 		logger)
+
+	auth.RegisterHandlers(r,
+		auth.NewService(cfg.JWTSigningKey, cfg.JWTExpiration, logger, user.NewRepository(db, logger)),
+		logger)
+
+	//authHandler := auth.Handler(cfg.JWTSigningKey)
 
 	return r
 }

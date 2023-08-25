@@ -18,11 +18,11 @@ type User struct {
 }
 
 // GetID returns the user ID.
-//func (u User) GetID() primitive.ObjectID {
-//	return u.ID
-//}
-//
-//// GetName returns the user name.
-//func (u User) GetName() string {
-//	return u.Name
-//}
+func (u User) GetID() primitive.ObjectID {
+	return u.ID
+}
+
+// GetName returns the user name.
+func (u User) GetName() string {
+	return u.Email
+}
