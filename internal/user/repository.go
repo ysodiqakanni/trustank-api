@@ -17,7 +17,7 @@ type Repository interface {
 	Get(ctx context.Context, id primitive.ObjectID) (entity.User, error)
 	GetByEmail(ctx context.Context, id string) (entity.User, error)
 	Create(ctx context.Context, user entity.User) (*primitive.ObjectID, error)
-	GetByEmailAndHashedPassword(ctx context.Context, email string, hashedPassword []byte) (entity.User, error)
+	//GetByEmailAndPassword(ctx context.Context, email string, hashedPassword []byte) (entity.User, error)
 	StartSession() (mongo.Session, error)
 }
 
@@ -48,7 +48,7 @@ func (r repository) GetByEmail(ctx context.Context, email string) (entity.User, 
 	var user entity.User
 	err := r.collection.FindOne(ctx, filter).Decode(&user)
 
-	fmt.Println("user data: ", user)
+	//fmt.Println("user data: ", user)
 	return user, err
 }
 func (r repository) Create(ctx context.Context, user entity.User) (*primitive.ObjectID, error) {
@@ -63,15 +63,16 @@ func (r repository) Create(ctx context.Context, user entity.User) (*primitive.Ob
 	id := result.InsertedID.(primitive.ObjectID)
 	return &id, err
 }
-func (r repository) GetByEmailAndHashedPassword(ctx context.Context, email string, hashedPassword []byte) (entity.User, error) {
-	filter := bson.M{
-		"email":           email,
-		"hashed_password": hashedPassword,
-	}
-	fmt.Println("username and hashed pwd: ", email, hashedPassword)
-	var user entity.User
-	err := r.collection.FindOne(ctx, filter).Decode(&user)
 
-	fmt.Println("user data: ", user)
-	return user, err
-}
+//func (r repository) GetByEmailAndHashedPassword(ctx context.Context, email string, hashedPassword []byte) (entity.User, error) {
+//	filter := bson.M{
+//		"email":           email,
+//		"hashed_password": hashedPassword,
+//	}
+//	fmt.Println("username and hashed pwd: ", email, hashedPassword)
+//	var user entity.User
+//	err := r.collection.FindOne(ctx, filter).Decode(&user)
+//
+//	fmt.Println("user data: ", user)
+//	return user, err
+//}

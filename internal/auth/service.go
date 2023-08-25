@@ -66,19 +66,27 @@ func (s service) Login(ctx context.Context, username, password string) (string, 
 func (s service) authenticate(ctx context.Context, username, password string) Identity {
 	logger := s.logger.With(ctx, "user", username)
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	// first get user by email
+	usr, err := s.userRepo.GetByEmail(ctx, username)
 	if err != nil {
+		logger.Infof("authentication failed")
 		return nil
 	}
 
-	usr, err := s.userRepo.GetByEmailAndHashedPassword(ctx, username, hashedPassword)
-	if err == nil {
-		logger.Infof("authentication successful")
-		return usr
+	logger.Infof("user found by email")
+	err = bcrypt.CompareHashAndPassword(usr.HashedPassword, []byte(password))
+	if err != nil {
+		logger.Errorf("authentication failed due to password", err)
+		return nil
+		// Todo: check what kind of error occurred
+		//if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+		//	return 0, ErrInvalidCredentials
+		//} else {
+		//	return 0, err
+		//}
 	}
-
-	logger.Infof("authentication failed")
-	return nil
+	logger.Infof("authentication successful")
+	return usr
 }
 
 // generateJWT generates a JWT that encodes an identity.
