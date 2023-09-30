@@ -2,23 +2,22 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"flag"
 	"fmt"
-	"github.com/go-ozzo/ozzo-dbx"
 	"github.com/go-ozzo/ozzo-routing/v2"
-	"github.com/go-ozzo/ozzo-routing/v2/content"
-	"github.com/go-ozzo/ozzo-routing/v2/cors"
+	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
-	"github.com/qiangxue/go-rest-api/internal/album"
 	"github.com/qiangxue/go-rest-api/internal/auth"
+	"github.com/qiangxue/go-rest-api/internal/business"
+	"github.com/qiangxue/go-rest-api/internal/businessCategory"
 	"github.com/qiangxue/go-rest-api/internal/config"
-	"github.com/qiangxue/go-rest-api/internal/errors"
-	"github.com/qiangxue/go-rest-api/internal/healthcheck"
-	"github.com/qiangxue/go-rest-api/pkg/accesslog"
+	"github.com/qiangxue/go-rest-api/internal/user"
 	"github.com/qiangxue/go-rest-api/pkg/dbcontext"
 	"github.com/qiangxue/go-rest-api/pkg/log"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 )
@@ -39,20 +38,17 @@ func main() {
 		logger.Errorf("failed to load application configuration: %s", err)
 		os.Exit(-1)
 	}
+	// connect to the mongo database
+	escapedPassword := url.QueryEscape(cfg.DbPassword)
+	connStr := fmt.Sprintf(cfg.DbConnectionString, escapedPassword)
+	db, err := NewMongoDB(connStr, cfg.DbName)
 
-	// connect to the database
-	db, err := dbx.MustOpen("postgres", cfg.DSN)
 	if err != nil {
 		logger.Error(err)
 		os.Exit(-1)
 	}
-	db.QueryLogFunc = logDBQuery(logger)
-	db.ExecLogFunc = logDBExec(logger)
-	defer func() {
-		if err := db.Close(); err != nil {
-			logger.Error(err)
-		}
-	}()
+
+	defer db.Client().Disconnect(context.Background())
 
 	// build HTTP server
 	address := fmt.Sprintf(":%v", cfg.ServerPort)
@@ -70,6 +66,45 @@ func main() {
 	}
 }
 
+func NewMongoDB(connStr, dbName string) (*mongo.Database, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(connStr))
+	if err != nil {
+		return nil, err
+	}
+
+	err = client.Ping(ctx, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	fmt.Println("Ping successful!")
+	// mongoClient = client
+
+	return client.Database(dbName), nil
+}
+
+func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.Handler {
+	r := mux.NewRouter()
+	businessCategory.RegisterHandlers(r,
+		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
+		logger)
+	business.RegisterHandlers(r,
+		business.NewService(business.NewRepository(db, logger), user.NewRepository(db, logger), logger),
+		logger)
+
+	auth.RegisterHandlers(r,
+		auth.NewService(cfg.JWTSigningKey, cfg.JWTExpiration, logger, user.NewRepository(db, logger)),
+		logger)
+
+	//authHandler := auth.Handler(cfg.JWTSigningKey)
+
+	return r
+}
+
+/*
 // buildHandler sets up the HTTP routing and builds an HTTP handler.
 func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.Handler {
 	router := routing.New()
@@ -91,6 +126,10 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 		album.NewService(album.NewRepository(db, logger), logger),
 		authHandler, logger,
 	)
+	businessCategory.RegisterHandlers(rg.Group(""),
+		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
+		authHandler, logger,
+	)
 
 	auth.RegisterHandlers(rg.Group(""),
 		auth.NewService(cfg.JWTSigningKey, cfg.JWTExpiration, logger),
@@ -99,7 +138,9 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 
 	return router
 }
+*/
 
+/*
 // logDBQuery returns a logging function that can be used to log SQL queries.
 func logDBQuery(logger log.Logger) dbx.QueryLogFunc {
 	return func(ctx context.Context, t time.Duration, sql string, rows *sql.Rows, err error) {
@@ -121,3 +162,4 @@ func logDBExec(logger log.Logger) dbx.ExecLogFunc {
 		}
 	}
 }
+*/

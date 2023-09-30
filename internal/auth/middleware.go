@@ -7,6 +7,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing/v2/auth"
 	"github.com/qiangxue/go-rest-api/internal/entity"
 	"github.com/qiangxue/go-rest-api/internal/errors"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
@@ -19,7 +20,7 @@ func Handler(verificationKey string) routing.Handler {
 func handleToken(c *routing.Context, token *jwt.Token) error {
 	ctx := WithUser(
 		c.Request.Context(),
-		token.Claims.(jwt.MapClaims)["id"].(string),
+		token.Claims.(jwt.MapClaims)["id"].(primitive.ObjectID),
 		token.Claims.(jwt.MapClaims)["name"].(string),
 	)
 	c.Request = c.Request.WithContext(ctx)
@@ -33,7 +34,7 @@ const (
 )
 
 // WithUser returns a context that contains the user identity from the given JWT.
-func WithUser(ctx context.Context, id, name string) context.Context {
+func WithUser(ctx context.Context, id primitive.ObjectID, name string) context.Context {
 	return context.WithValue(ctx, userKey, entity.User{ID: id, Name: name})
 }
 
@@ -54,7 +55,7 @@ func MockAuthHandler(c *routing.Context) error {
 	if c.Request.Header.Get("Authorization") != "TEST" {
 		return errors.Unauthorized("")
 	}
-	ctx := WithUser(c.Request.Context(), "100", "Tester")
+	ctx := WithUser(c.Request.Context(), primitive.NewObjectID(), "Tester")
 	c.Request = c.Request.WithContext(ctx)
 	return nil
 }

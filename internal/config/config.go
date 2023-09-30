@@ -22,7 +22,10 @@ type Config struct {
 	// JWT signing key. required.
 	JWTSigningKey string `yaml:"jwt_signing_key" env:"JWT_SIGNING_KEY,secret"`
 	// JWT expiration in hours. Defaults to 72 hours (3 days)
-	JWTExpiration int `yaml:"jwt_expiration" env:"JWT_EXPIRATION"`
+	JWTExpiration      int    `yaml:"jwt_expiration" env:"JWT_EXPIRATION"`
+	DbConnectionString string `yaml:"db_connection_string" env:"DB_CONNECTION_STRING"`
+	DbPassword         string `yaml:"db_password" env:"DB_PASSWORD"`
+	DbName             string `yaml:"db_name" env:"DB_NAME"`
 }
 
 // Validate validates the application configuration.

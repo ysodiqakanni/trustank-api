@@ -1,0 +1,3 @@
+db_connection_string: "mongodb+srv://root:%s@mycluster.randomname.mongodb.net/?retryWrites=true&w=majority"
+db_password: "strongPass"
+db_name: "practicedb"
