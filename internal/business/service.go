@@ -20,6 +20,7 @@ import (
 type Service interface {
 	Get(ctx context.Context, id primitive.ObjectID) (Business, error)
 	Register(ctx context.Context, req CreateBusinessRequest) (Business, error)
+	GetByName(ctx context.Context, name string) (Business, error)
 }
 
 // Business represents the data about a BusinessCategory.
@@ -65,6 +66,14 @@ func NewService(repo Repository, userRepo user.Repository, logger log.Logger) Se
 // Get returns the album with the specified the album ID.
 func (s service) Get(ctx context.Context, id primitive.ObjectID) (Business, error) {
 	business, err := s.repo.Get(ctx, id)
+	if err != nil {
+		return Business{}, err
+	}
+	return Business{business}, nil
+}
+
+func (s service) GetByName(ctx context.Context, name string) (Business, error) {
+	business, err := s.repo.GetByEmail(ctx, name)
 	if err != nil {
 		return Business{}, err
 	}

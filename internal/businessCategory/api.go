@@ -14,6 +14,8 @@ func RegisterHandlers(r *mux.Router, service Service, logger log.Logger) {
 	r.HandleFunc("/api/v1/categories/{id}", res.getByIdHandler).Methods("GET")
 	r.HandleFunc("/api/v1/categories", res.getByNameHandler).Methods("GET")
 	r.HandleFunc("/api/v1/categories", res.create).Methods("POST")
+
+	r.Use()
 }
 
 type resource struct {

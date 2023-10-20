@@ -4,12 +4,10 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/qiangxue/go-rest-api/internal/auth"
 	"github.com/qiangxue/go-rest-api/internal/business"
-	"github.com/qiangxue/go-rest-api/internal/businessCategory"
 	"github.com/qiangxue/go-rest-api/internal/config"
 	"github.com/qiangxue/go-rest-api/internal/user"
 	"github.com/qiangxue/go-rest-api/pkg/dbcontext"
@@ -58,7 +56,7 @@ func main() {
 	}
 
 	// start the HTTP server with graceful shutdown
-	go routing.GracefulShutdown(hs, 10*time.Second, logger.Infof)
+	// go routing.GracefulShutdown(hs, 10*time.Second, logger.Infof)
 	logger.Infof("server %v is running at %v", Version, address)
 	if err := hs.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logger.Error(err)
@@ -88,20 +86,90 @@ func NewMongoDB(connStr, dbName string) (*mongo.Database, error) {
 
 func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.Handler {
 	r := mux.NewRouter()
-	businessCategory.RegisterHandlers(r,
-		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
-		logger)
+	r.HandleFunc("/public1", publicEndpoint1).Methods("GET")
+
+	// Protected Endpoints
+	r.Handle("/protected1", auth.AuthenticateMiddleware(http.HandlerFunc(protectedEndpoint1), cfg.JWTSigningKey)).Methods("GET")
+	r.Handle("/protected2", auth.AuthenticateMiddleware(http.HandlerFunc(protectedEndpoint2), cfg.JWTSigningKey)).Methods("GET")
+
+	r.HandleFunc("/public2", publicEndpoint2).Methods("GET")
+
+	business.RegisterBusinessHandlers(r,
+		business.NewService(business.NewRepository(db, logger), user.NewRepository(db, logger), logger),
+		logger,
+		cfg.JWTSigningKey)
+
 	business.RegisterHandlers(r,
 		business.NewService(business.NewRepository(db, logger), user.NewRepository(db, logger), logger),
-		logger)
+		logger,
+		cfg.JWTSigningKey)
 
+	//businessCategory.RegisterHandlers(r,
+	//	businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
+	//	logger)
+	//
 	auth.RegisterHandlers(r,
 		auth.NewService(cfg.JWTSigningKey, cfg.JWTExpiration, logger, user.NewRepository(db, logger)),
 		logger)
 
-	//authHandler := auth.Handler(cfg.JWTSigningKey)
+	// jwt stuffs
+	//jwtMiddleware := auth.JwtMiddleware(r, cfg.JWTSigningKey)
+	//authMiddleware := auth.AuthenticateMiddleware(r, cfg.JWTSigningKey)
+	//authMW := AuthMiddleware(r)
+	//r.PathPrefix("/api/v1/businesses").Subrouter().Use(jwtMiddleware)
 
+	//r.Handle("/api/v1/blocked", AuthMiddleware(http.HandlerFunc(blockedHandler))).Methods("GET")
+
+	//business.RegisterHandlers(r, jwtMiddleware,
+	//	business.NewService(business.NewRepository(db, logger), user.NewRepository(db, logger), logger),
+	//	logger)
 	return r
+}
+
+func AuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Auth middleware hit!")
+		next.ServeHTTP(w, r)
+	})
+}
+
+func blockedHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("you're authorized"))
+}
+func regularHandler(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte("This is a regular handler"))
+}
+
+func AuthMiddleware2(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check for a Bearer token in the Authorization header
+		token := r.Header.Get("Authorization")
+		if token == "" {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// In a real application, you would validate the token here.
+		// For simplicity, we'll assume any token is valid.
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func publicEndpoint1(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "This is a public endpoint 1")
+}
+
+func publicEndpoint2(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "This is a public endpoint 2")
+}
+
+func protectedEndpoint1(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "This is a protected endpoint 1")
+}
+
+func protectedEndpoint2(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "This is a protected endpoint 2")
 }
 
 /*
