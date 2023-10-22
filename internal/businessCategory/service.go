@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"github.com/qiangxue/go-rest-api/internal/entity"
-	"github.com/qiangxue/go-rest-api/pkg/log"
+	"github.com/ysodiqakanni/trustank-api/internal/entity"
+	"github.com/ysodiqakanni/trustank-api/pkg/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"time"
 )

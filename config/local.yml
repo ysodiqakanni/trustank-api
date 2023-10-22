@@ -1,2 +1,5 @@
-dsn: "postgres://127.0.0.1/go_restful?sslmode=disable&user=postgres&password=postgres"
-jwt_signing_key: "LxsKJywDL5O5PvgODZhBH12KE6k2yL8E"
+dsn: "postgres:conn"
+jwt_signing_key: "awesomesigningkey"
+db_connection_string: "mymongoconn"
+db_password: "pass"
+db_name: "mydb"

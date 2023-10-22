@@ -2,9 +2,9 @@ package album
 
 import (
 	"github.com/go-ozzo/ozzo-routing/v2"
-	"github.com/qiangxue/go-rest-api/internal/errors"
-	"github.com/qiangxue/go-rest-api/pkg/log"
-	"github.com/qiangxue/go-rest-api/pkg/pagination"
+	"github.com/ysodiqakanni/trustank-api/internal/errors"
+	"github.com/ysodiqakanni/trustank-api/pkg/log"
+	"github.com/ysodiqakanni/trustank-api/pkg/pagination"
 	"net/http"
 )
 
