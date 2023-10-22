@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/qiangxue/go-rest-api/internal/auth"
@@ -58,7 +57,7 @@ func main() {
 	}
 
 	// start the HTTP server with graceful shutdown
-	go routing.GracefulShutdown(hs, 10*time.Second, logger.Infof)
+	// go routing.GracefulShutdown(hs, 10*time.Second, logger.Infof)
 	logger.Infof("server %v is running at %v", Version, address)
 	if err := hs.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logger.Error(err)
@@ -88,78 +87,24 @@ func NewMongoDB(connStr, dbName string) (*mongo.Database, error) {
 
 func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.Handler {
 	r := mux.NewRouter()
-	businessCategory.RegisterHandlers(r,
-		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
-		logger)
+	business.RegisterBusinessHandlers(r,
+		business.NewService(business.NewRepository(db, logger), user.NewRepository(db, logger), logger),
+		logger,
+		cfg.JWTSigningKey)
+
 	business.RegisterHandlers(r,
 		business.NewService(business.NewRepository(db, logger), user.NewRepository(db, logger), logger),
-		logger)
+		logger,
+		cfg.JWTSigningKey)
+
+	businessCategory.RegisterHandlers(r,
+		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
+		logger,
+		cfg.JWTSigningKey)
 
 	auth.RegisterHandlers(r,
 		auth.NewService(cfg.JWTSigningKey, cfg.JWTExpiration, logger, user.NewRepository(db, logger)),
 		logger)
 
-	//authHandler := auth.Handler(cfg.JWTSigningKey)
-
 	return r
 }
-
-/*
-// buildHandler sets up the HTTP routing and builds an HTTP handler.
-func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.Handler {
-	router := routing.New()
-
-	router.Use(
-		accesslog.Handler(logger),
-		errors.Handler(logger),
-		content.TypeNegotiator(content.JSON),
-		cors.Handler(cors.AllowAll),
-	)
-
-	healthcheck.RegisterHandlers(router, Version)
-
-	rg := router.Group("/v1")
-
-	authHandler := auth.Handler(cfg.JWTSigningKey)
-
-	album.RegisterHandlers(rg.Group(""),
-		album.NewService(album.NewRepository(db, logger), logger),
-		authHandler, logger,
-	)
-	businessCategory.RegisterHandlers(rg.Group(""),
-		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
-		authHandler, logger,
-	)
-
-	auth.RegisterHandlers(rg.Group(""),
-		auth.NewService(cfg.JWTSigningKey, cfg.JWTExpiration, logger),
-		logger,
-	)
-
-	return router
-}
-*/
-
-/*
-// logDBQuery returns a logging function that can be used to log SQL queries.
-func logDBQuery(logger log.Logger) dbx.QueryLogFunc {
-	return func(ctx context.Context, t time.Duration, sql string, rows *sql.Rows, err error) {
-		if err == nil {
-			logger.With(ctx, "duration", t.Milliseconds(), "sql", sql).Info("DB query successful")
-		} else {
-			logger.With(ctx, "sql", sql).Errorf("DB query error: %v", err)
-		}
-	}
-}
-
-// logDBExec returns a logging function that can be used to log SQL executions.
-func logDBExec(logger log.Logger) dbx.ExecLogFunc {
-	return func(ctx context.Context, t time.Duration, sql string, result sql.Result, err error) {
-		if err == nil {
-			logger.With(ctx, "duration", t.Milliseconds(), "sql", sql).Info("DB execution successful")
-		} else {
-			logger.With(ctx, "sql", sql).Errorf("DB execution error: %v", err)
-		}
-	}
-}
-*/

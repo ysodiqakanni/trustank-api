@@ -4,16 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/qiangxue/go-rest-api/internal/auth"
 	"github.com/qiangxue/go-rest-api/pkg/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
 
-func RegisterHandlers(r *mux.Router, service Service, logger log.Logger) {
+func RegisterHandlers(r *mux.Router, service Service, logger log.Logger, secret string) {
 	res := resource{service, logger}
 	r.HandleFunc("/api/v1/categories/{id}", res.getByIdHandler).Methods("GET")
 	r.HandleFunc("/api/v1/categories", res.getByNameHandler).Methods("GET")
-	r.HandleFunc("/api/v1/categories", res.create).Methods("POST")
+
+	// Protected Endpoints
+	r.Handle("/api/v1/categories", auth.AuthenticateMiddleware(http.HandlerFunc(res.create), secret)).Methods("POST")
+	r.Use()
 }
 
 type resource struct {
