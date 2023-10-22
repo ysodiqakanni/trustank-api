@@ -68,20 +68,27 @@ func AuthenticateMiddleware(next http.Handler, jwtSecret string) http.Handler {
 		}
 
 		// test token validation
+		var tokenSecret = []byte(jwtSecret)
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			// Check the signing method and return the secret key
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("Invalid token signing method")
 			}
-			return jwtSecret, nil
+			return tokenSecret, nil
 		})
 
 		if err != nil || !token.Valid {
 			http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+			fmt.Println(err.Error())
 			return
 		}
-		// end test token validation
-
+		// end test token validation. Let's inspect the token claims
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			http.Error(w, "Invalid token claims", http.StatusUnauthorized)
+			return
+		}
+		fmt.Println("User claims are: ", claims)
 		// Add user information to the request context
 		ctx := context.WithValue(r.Context(), "user", user)
 		next.ServeHTTP(w, r.WithContext(ctx))

@@ -8,6 +8,7 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/qiangxue/go-rest-api/internal/auth"
 	"github.com/qiangxue/go-rest-api/internal/business"
+	"github.com/qiangxue/go-rest-api/internal/businessCategory"
 	"github.com/qiangxue/go-rest-api/internal/config"
 	"github.com/qiangxue/go-rest-api/internal/user"
 	"github.com/qiangxue/go-rest-api/pkg/dbcontext"
@@ -104,10 +105,11 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 		logger,
 		cfg.JWTSigningKey)
 
-	//businessCategory.RegisterHandlers(r,
-	//	businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
-	//	logger)
-	//
+	businessCategory.RegisterHandlers(r,
+		businessCategory.NewService(businessCategory.NewRepository(db, logger), logger),
+		logger,
+		cfg.JWTSigningKey)
+
 	auth.RegisterHandlers(r,
 		auth.NewService(cfg.JWTSigningKey, cfg.JWTExpiration, logger, user.NewRepository(db, logger)),
 		logger)
