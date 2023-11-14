@@ -25,6 +25,8 @@ type Identity interface {
 	GetID() primitive.ObjectID
 	// GetName returns the user name.
 	GetName() string
+
+	GetRole() []string
 }
 
 type service struct {
@@ -94,6 +96,7 @@ func (s service) generateJWT(identity Identity) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":   identity.GetID(),
 		"name": identity.GetName(),
+		"role": identity.GetRole(),
 		"exp":  time.Now().Add(time.Duration(s.tokenExpiration) * time.Hour).Unix(),
 	}).SignedString([]byte(s.signingKey))
 }

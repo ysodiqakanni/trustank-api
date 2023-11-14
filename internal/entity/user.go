@@ -17,6 +17,10 @@ type User struct {
 	UpdatedAt      time.Time          `json:"updated_at"`
 }
 
+func (u User) GetRole() []string {
+	return u.Role
+}
+
 // GetID returns the user ID.
 func (u User) GetID() primitive.ObjectID {
 	return u.ID

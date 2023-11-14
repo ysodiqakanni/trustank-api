@@ -42,11 +42,49 @@ func AuthenticateMiddleware(next http.Handler, jwtSecret string) http.Handler {
 			http.Error(w, "Invalid token claims", http.StatusUnauthorized)
 			return
 		}
+		// the jwt library internally converts my jwt []string to []interface.
+		// So Ima convert to []string for easy manipulation
+		roles, ok := claims["role"].([]interface{})
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		// Convert []interface{} to []string
+		var rolesSlice []string
+		for _, role := range roles {
+			rolesSlice = append(rolesSlice, fmt.Sprintf("%v", role))
+		}
+
 		fmt.Println("User claims are: ", claims)
 		// Add user information to the request context
-		ctx := context.WithValue(r.Context(), "username", claims["name"].(string))
+		ctx := context.WithValue(r.Context(), "name", claims["name"].(string))
+		ctx = context.WithValue(ctx, "role", rolesSlice) //  claims["role"].([]interface{})
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+// RoleMiddleware is a middleware to check the user's role
+func RoleMiddleware(next http.Handler, requiredRole string) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		//fmt.Println("username in claim", userName)
+		roles, ok := r.Context().Value("role").([]string)
+		//fmt.Println("roles: ", role)
+		if !ok || containsRole(roles, requiredRole) == false {
+			http.Error(w, "Forbidden", http.StatusForbidden)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func containsRole(roles []string, role string) bool {
+	for _, r := range roles {
+		if r == role {
+			return true
+		}
+	}
+	return false
 }
 
 // User struct for context value
