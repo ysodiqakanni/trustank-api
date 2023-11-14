@@ -16,7 +16,7 @@ import (
 // Service encapsulates use case logic for businessCategories.
 type Service interface {
 	Get(ctx context.Context, id primitive.ObjectID) (BusinessCategory, error)
-	GetByName(ctx context.Context, name string) (BusinessCategory, error)
+	GetByName(ctx context.Context, name string) (*BusinessCategory, error)
 	Create(ctx context.Context, req CreateBusinessCategoryRequest) (BusinessCategory, error)
 	Update(ctx context.Context, category UpdateBusinessCategoryRequest) (*entity.BusinessCategory, error)
 	GetFeatured(ctx context.Context) []BusinessCategory
@@ -77,12 +77,12 @@ func (s service) Get(ctx context.Context, id primitive.ObjectID) (BusinessCatego
 	return BusinessCategory{category}, nil
 }
 
-func (s service) GetByName(ctx context.Context, name string) (BusinessCategory, error) {
+func (s service) GetByName(ctx context.Context, name string) (*BusinessCategory, error) {
 	category, err := s.repo.GetByName(ctx, name)
 	if err != nil {
-		return BusinessCategory{}, err
+		return nil, err
 	}
-	return BusinessCategory{category}, nil
+	return &BusinessCategory{category}, nil
 }
 func (s service) Create(ctx context.Context, req CreateBusinessCategoryRequest) (BusinessCategory, error) {
 	if err := req.Validate(); err != nil {
@@ -90,8 +90,8 @@ func (s service) Create(ctx context.Context, req CreateBusinessCategoryRequest) 
 	}
 
 	existing, _ := s.GetByName(ctx, req.Name)
-	emptyObj := BusinessCategory{}
-	if existing != emptyObj {
+	//emptyObj := BusinessCategory{}
+	if existing != nil /*!= emptyObj*/ {
 		return BusinessCategory{}, errors.New("A business_ category with this name already exists")
 	}
 

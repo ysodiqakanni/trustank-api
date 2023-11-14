@@ -86,7 +86,7 @@ func (r repository) Update(ctx context.Context, category entity.BusinessCategory
 }
 
 func (r repository) GetFeaturedList(ctx context.Context) []BusinessCategory {
-	filter := bson.M{"is_featured": false}
+	filter := bson.D{}
 	cursor, err := r.collection.Find(ctx, filter)
 
 	if err != nil {
@@ -95,26 +95,7 @@ func (r repository) GetFeaturedList(ctx context.Context) []BusinessCategory {
 	}
 	defer cursor.Close(ctx)
 
-	// Create a slice to store the results
-	var categories []BusinessCategory = []BusinessCategory{}
-
-	// Iterate through the cursor and unmarshal each document into a BusinessCategory struct
-	for cursor.Next(ctx) {
-		var category BusinessCategory
-		err := cursor.Decode(&category)
-		if err != nil {
-			r.logger.Error(err)
-			return []BusinessCategory{}
-		}
-		categories = append(categories, category)
-	}
-
-	if err := cursor.Err(); err != nil {
-		// Handle any cursor error
-		r.logger.Error(err)
-		return []BusinessCategory{}
-	}
-
+	categories := CursorToBusinessCategories(ctx, cursor)
 	return categories
 }
 func (r repository) SearchCategories(ctx context.Context, keyword string) []BusinessCategory {
@@ -131,7 +112,8 @@ func (r repository) SearchCategories(ctx context.Context, keyword string) []Busi
 	}
 	defer cursor.Close(ctx)
 
-	return CursorToBusinessCategories(ctx, cursor)
+	categories := CursorToBusinessCategories(ctx, cursor)
+	return categories
 }
 
 func CursorToBusinessCategories(ctx context.Context, cursor *mongo.Cursor) []BusinessCategory {
@@ -139,13 +121,13 @@ func CursorToBusinessCategories(ctx context.Context, cursor *mongo.Cursor) []Bus
 
 	// Iterate through the cursor and unmarshal each document into a BusinessCategory struct
 	for cursor.Next(ctx) {
-		var category BusinessCategory
+		var category entity.BusinessCategory
 		err := cursor.Decode(&category)
 		if err != nil {
 			fmt.Errorf(err.Error())
 			return []BusinessCategory{}
 		}
-		categories = append(categories, category)
+		categories = append(categories, BusinessCategory{category})
 	}
 
 	if err := cursor.Err(); err != nil {
