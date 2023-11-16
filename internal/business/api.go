@@ -62,6 +62,8 @@ func RegisterHandlers(r *mux.Router, service Service, logger log.Logger, secret 
 	// Protected Endpoint
 	r.Handle("/api/v1/businesses", auth.AuthenticateMiddleware(http.HandlerFunc(res.getByNameHandler), secret)).Methods("GET")
 
+	r.Handle("/api/v1/businesses", auth.AuthenticateMiddleware(auth.RoleMiddleware(http.HandlerFunc(res.create), "admin"), secret)).Methods("POST")
+
 	//
 	//r.HandleFunc("/api/v1/businesses/{id}", res.getByIdHandler).Methods("GET")
 	////r.Handle("/api/v1/businesses", authMiddleware(res.getByNameHandler)).Methods("GET")

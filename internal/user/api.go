@@ -27,3 +27,8 @@ func (r resource) getByIdHandler(w http.ResponseWriter, req *http.Request) {
 	category, _ := r.service.Get(req.Context(), idk)
 	json.NewEncoder(w).Encode(category)
 }
+
+func (r resource) createNewUser(w http.ResponseWriter, req *http.Request) {
+	// check if user already exists
+
+}

@@ -20,8 +20,8 @@ func RegisterHandlers(r *mux.Router, service Service, logger log.Logger, secret 
 	// Protected Endpoints
 	//r.Handle("/api/v1/categories", auth.AuthenticateMiddleware(http.HandlerFunc(res.create), secret)).Methods("POST")
 	r.Handle("/api/v1/categories", auth.AuthenticateMiddleware(auth.RoleMiddleware(http.HandlerFunc(res.create), "admin"), secret)).Methods("POST")
-	r.Handle("/api/v1/categories", auth.AuthenticateMiddleware(http.HandlerFunc(res.updateCategoryHandler), secret)).Methods("PUT")
-	r.Handle("/api/v1/categories", auth.AuthenticateMiddleware(http.HandlerFunc(res.deleteCategoryHandler), secret)).Methods("DELETE")
+	r.Handle("/api/v1/categories", auth.AuthenticateMiddleware(auth.RoleMiddleware(http.HandlerFunc(res.updateCategoryHandler), "admin"), secret)).Methods("PUT")
+	r.Handle("/api/v1/categories", auth.AuthenticateMiddleware(auth.RoleMiddleware(http.HandlerFunc(res.deleteCategoryHandler), "admin"), secret)).Methods("DELETE")
 	r.Use()
 }
 
