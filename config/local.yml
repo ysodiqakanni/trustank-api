@@ -1,2 +1,6 @@
 dsn: "postgres://127.0.0.1/go_restful?sslmode=disable&user=postgres&password=postgres"
-jwt_signing_key: "LxsKJywDL5O5PvgODZhBH12KE6k2yL8E"
+jwt_signing_key: "Lxkeykeykey"
+db_connection_string: "mongodb+srv://root:%s@testcluster.yummyyummy.mongodb.net/?retryWrites=true&w=majority"
+db_password: "password"
+db_name: "dbname"
+password_hashing_cost: 12
