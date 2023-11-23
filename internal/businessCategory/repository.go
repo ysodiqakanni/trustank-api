@@ -3,9 +3,9 @@ package businessCategory
 import (
 	"context"
 	"fmt"
-	"github.com/qiangxue/go-rest-api/internal/entity"
-	"github.com/qiangxue/go-rest-api/pkg/dbcontext"
-	"github.com/qiangxue/go-rest-api/pkg/log"
+	"github.com/ysodiqakanni/trustank-api/internal/entity"
+	"github.com/ysodiqakanni/trustank-api/pkg/dbcontext"
+	"github.com/ysodiqakanni/trustank-api/pkg/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

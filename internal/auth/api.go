@@ -3,7 +3,7 @@ package auth
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/qiangxue/go-rest-api/pkg/log"
+	"github.com/ysodiqakanni/trustank-api/pkg/log"
 	"net/http"
 )
 

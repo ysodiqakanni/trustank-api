@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/qiangxue/go-rest-api/pkg/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/ysodiqakanni/trustank-api/pkg/log"
 	"testing"
 	"time"
 )

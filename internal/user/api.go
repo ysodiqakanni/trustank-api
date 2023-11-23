@@ -3,7 +3,7 @@ package user
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/qiangxue/go-rest-api/pkg/log"
+	"github.com/ysodiqakanni/trustank-api/pkg/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )

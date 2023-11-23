@@ -1,4 +1,4 @@
-module github.com/qiangxue/go-rest-api
+module github.com/ysodiqakanni/trustank-api
 
 go 1.13
 
