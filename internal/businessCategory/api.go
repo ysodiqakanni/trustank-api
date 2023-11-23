@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
-	"github.com/qiangxue/go-rest-api/internal/auth"
-	"github.com/qiangxue/go-rest-api/pkg/log"
+	"github.com/ysodiqakanni/trustank-api/internal/auth"
+	"github.com/ysodiqakanni/trustank-api/pkg/log"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
