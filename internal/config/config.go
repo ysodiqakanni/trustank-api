@@ -26,6 +26,8 @@ type Config struct {
 	DbConnectionString string `yaml:"db_connection_string" env:"DB_CONNECTION_STRING"`
 	DbPassword         string `yaml:"db_password" env:"DB_PASSWORD"`
 	DbName             string `yaml:"db_name" env:"DB_NAME"`
+
+	PasswordHashingCost int `yaml:"password_hashing_cost" env:"PASSWORD_HASHING_COST"`
 }
 
 // Validate validates the application configuration.

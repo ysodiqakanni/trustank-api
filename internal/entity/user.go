@@ -12,9 +12,12 @@ type User struct {
 	Email          string             `bson:"email"`
 	Role           []string           `bson:"role"`
 	HashedPassword []byte             `bson:"hashed_password"`
-	Created        time.Time          `bson:"created"`
 	CreatedAt      time.Time          `json:"created_at"`
 	UpdatedAt      time.Time          `json:"updated_at"`
+}
+
+func (u User) GetRole() []string {
+	return u.Role
 }
 
 // GetID returns the user ID.
