@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 1 # adjust as needed
+  minReadySeconds: 10 # the pod should be up for at least 10sec before we can consider it stable
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: trustankbizapi
+          image: ysodiqakanni/trustankbizapi:latest # replace with your own image name and tag
+          ports:
+            - containerPort: 8080 # replace with the port your app listens on
+          env:
+            - name: MONGO_URI
+              value: mongodb://my-mongodb-service:27017/my-db # replace with your own MongoDB URI
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+spec:
+  selector:
+    app: my-app
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080 # replace with the port your app listens on
+  type: LoadBalancer # change as needed depending on your use case

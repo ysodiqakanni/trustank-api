@@ -87,6 +87,8 @@ func NewMongoDB(connStr, dbName string) (*mongo.Database, error) {
 
 func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.Handler {
 	r := mux.NewRouter()
+	r.HandleFunc("/api/healthcheck", HealthCheckHandler).Methods("GET")
+
 	business.RegisterBusinessHandlers(r,
 		business.NewService(business.NewRepository(db, logger), user.NewRepository(db, logger), logger),
 		logger,
@@ -107,4 +109,8 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 		logger)
 
 	return r
+}
+
+func HealthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "Everything is dope from this side :)")
 }
