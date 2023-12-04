@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: trustankbizapi
-          image: ysodiqakanni/trustankbizapi:latest # replace with your own image name and tag
+          image: ysodiqakanni/trustankbizapi:1.0.0 # replace with your own image name and tag
           ports:
             - containerPort: 8080 # replace with the port your app listens on
           env:
