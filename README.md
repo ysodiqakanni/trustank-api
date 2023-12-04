@@ -41,4 +41,6 @@ $ docker tag trustankbizapi:latest ysodiqakanni/trustankbizapi:1.0.0
 $ docker push ysodiqakanni/trustankbizapi:1.0.0
 
 ### Now that the image is in your dockerhub, you can now run the project using kubernetes
-From the root folder, run `kubectl apply -f kubernetes/api.deployment.yml` 
+From the root folder, run `kubectl apply -f kubernetes/api.deployment.yml`
+
+To stop the project, run `kubectl delete -f kubernetes/api.deployment.yml`

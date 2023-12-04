@@ -1,21 +1,33 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-app
+  name: trustank-api
 spec:
   replicas: 1 # adjust as needed
   minReadySeconds: 10 # the pod should be up for at least 10sec before we can consider it stable
   selector:
     matchLabels:
-      app: my-app
+      app: trustank-api
   template:
     metadata:
       labels:
-        app: my-app
+        app: trustank-api
     spec:
       containers:
         - name: trustankbizapi
           image: ysodiqakanni/trustankbizapi:1.0.0 # replace with your own image name and tag
+          readinessProbe:
+            httpGet:
+              path: /api/healthcheck
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/healthcheck
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 15
           ports:
             - containerPort: 8080 # replace with the port your app listens on
           env:
@@ -25,10 +37,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: my-app-service
+  name: trustank-api-service
 spec:
   selector:
-    app: my-app
+    app: trustank-api
   ports:
     - protocol: TCP
       port: 8080
